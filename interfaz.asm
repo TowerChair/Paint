@@ -144,10 +144,30 @@ mouse:
 	xor ch,ch 		;pone en ceros la parte alta de CX ya que el valor de la columna cabe en CL
 	cmp cx,60 		;compara el valor de la columna con 60d, ya que 60 es el numero de la columna en donde se separa el lienzo de los controles del programa
 	jge botoncerrar0 	;Si es mayor, entonces el cursor del mouse se encuentra en los controles del programa y salta
+	mov ax,3		;opcion ax = 3 para interrupcion 33h. 
+	int 33h			;int 33h. para obtener la posicion del mouse y el status de sus botones
+	and bx,0001h ;salto incondicional a etiqueta 'imprime'
+	cmp bx,1 			;compara si el valor del registro BX es 1, eso implicaria que el boton izquierdo del mouse esta presionado
+	je lienzo 
 lienzo:
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	;;;;;;AQUI SE REVISA SI EL BOTON IZQ DEL MOUSE SE PRESIONO DENTRO DE LA ZONA DEL LIENZO;;;;;;
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	mov ax,3		;opcion ax = 3 para interrupcion 33h. 
+	int 33h	
+	mov ax,dx 		;copia el valor del renglon en AX
+	div [numaux8] 	;division entre 8 para obtener el valor del renglon en resolucion 80x25
+	mov dx,ax 		;devuelve el valor a DX
+	xor dh,dh 		;pone en ceros la parte alta de DX ya que el valor de renglon cabe en DL
+	mov ax,cx 		;copia el valor de la columna en AX
+	div [numaux8] 	;division entre 8 para obtener el valor de la columna en resolucion 80x25
+	mov cx,ax 		;devuelve el valor a CX
+	xor ch,ch 		;pone en ceros la parte alta de CX ya que el valor de l
+	posicionaCursor dl,cl	
+	mov al,219 		;pone el caracter de cuadro █ en AL para imprimirlo
+	mov bl,0Eh 
+	;posicionaCursor ax,10	;macro para posicionar cursor del teclado en renglon = 1 y columna = 0
+	mov ah,09h		;opcion 9 para interrupcion 10h
+	mov cx,1		;cx = 1, se imprimiran cx caracteres
+	int 10h			;interrupcion 10h. Imprime el caracter contenido en AL, CX veces.
+
 	jmp mouse
 
 botoncerrar0:
